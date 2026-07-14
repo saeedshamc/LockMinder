@@ -4,6 +4,7 @@ import android.app.AppOpsManager
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Process
 import android.provider.Settings
@@ -64,10 +65,20 @@ object PermissionUtil {
         return dpm.isAdminActive(adminComponent)
     }
 
+    fun isNotificationPermissionGranted(context: Context): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val permission = android.Manifest.permission.POST_NOTIFICATIONS
+            context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+    }
+
     fun hasAllPermissions(context: Context): Boolean {
         return isAccessibilityServiceEnabled(context) &&
                isUsageStatsPermissionGranted(context) &&
                isOverlayPermissionGranted(context) &&
-               isDeviceAdminActive(context)
+               isDeviceAdminActive(context) &&
+               isNotificationPermissionGranted(context)
     }
 }

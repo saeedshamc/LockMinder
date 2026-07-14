@@ -56,6 +56,14 @@ fun SettingsScreen(
     var isOverlayGranted by remember { mutableStateOf(false) }
     var isDeviceAdminActive by remember { mutableStateOf(false) }
     var isBatteryOptimizationIgnored by remember { mutableStateOf(true) }
+    var isNotificationGranted by remember { mutableStateOf(false) }
+
+    val requestNotificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            isNotificationGranted = isGranted
+        }
+    )
 
     // Backup & Restore Launchers
     val exportLauncher = rememberLauncherForActivityResult(
@@ -99,6 +107,7 @@ fun SettingsScreen(
             isUsageStatsGranted = PermissionUtil.isUsageStatsPermissionGranted(context)
             isOverlayGranted = PermissionUtil.isOverlayPermissionGranted(context)
             isDeviceAdminActive = PermissionUtil.isDeviceAdminActive(context)
+            isNotificationGranted = PermissionUtil.isNotificationPermissionGranted(context)
 
             val pm = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
             isBatteryOptimizationIgnored = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -255,6 +264,20 @@ fun SettingsScreen(
                         } catch (ex: Exception) {
                             Toast.makeText(context, "Cannot open Battery settings", Toast.LENGTH_SHORT).show()
                         }
+                    }
+                }
+            )
+
+            // Notifications card
+            PermissionSettingCard(
+                title = "System Notification Banner",
+                description = "Required on Android 13+ to display the real-time active shield lock timer notification.",
+                isGranted = isNotificationGranted,
+                onClickLaunch = {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        requestNotificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                    } else {
+                        Toast.makeText(context, "Permission automatically granted on this Android version", Toast.LENGTH_SHORT).show()
                     }
                 }
             )

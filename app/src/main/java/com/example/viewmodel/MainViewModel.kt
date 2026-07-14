@@ -11,6 +11,7 @@ import com.example.service.LockMonitorForegroundService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 
 data class AppInfo(
@@ -90,7 +91,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 // Check if already active
                 val existing = repository.getActiveRuleForPackage(packageName)
                 if (existing != null) {
-                    onResult(false, "$appLabel is already locked!")
+                    withContext(Dispatchers.Main) {
+                        onResult(false, "$appLabel is already locked!")
+                    }
                     return@launch
                 }
 
@@ -108,9 +111,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
                 repository.insertRule(newRule)
                 LockMonitorForegroundService.startService(context)
-                onResult(true, "Successfully locked $appLabel!")
+                withContext(Dispatchers.Main) {
+                    onResult(true, "Successfully locked $appLabel!")
+                }
             } catch (e: Exception) {
-                onResult(false, "Failed to create lock: ${e.localizedMessage}")
+                withContext(Dispatchers.Main) {
+                    onResult(false, "Failed to create lock: ${e.localizedMessage}")
+                }
             }
         }
     }
@@ -126,7 +133,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 if (!rule.isActive) {
                     // Already inactive or expired, delete immediately
                     repository.deleteRule(rule)
-                    onResult(true, "Rule removed from dashboard")
+                    withContext(Dispatchers.Main) {
+                        onResult(true, "Rule removed from dashboard")
+                    }
                     return@launch
                 }
 
@@ -140,14 +149,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     val hours = TimeUnit.MILLISECONDS.toHours(coolingOffMs)
                     val minutes = TimeUnit.MILLISECONDS.toMinutes(coolingOffMs) % 60
                     val delayStr = if (hours > 0) "$hours hr $minutes min" else "$minutes min"
-                    onResult(true, "Cooling-off initiated. Rule will unlock in $delayStr.")
+                    withContext(Dispatchers.Main) {
+                        onResult(true, "Cooling-off initiated. Rule will unlock in $delayStr.")
+                    }
                 } else {
                     // No cooling off: standard deletion
                     repository.deleteRule(rule)
-                    onResult(true, "Rule unlocked immediately")
+                    withContext(Dispatchers.Main) {
+                        onResult(true, "Rule unlocked immediately")
+                    }
                 }
             } catch (e: Exception) {
-                onResult(false, "Failed to remove lock: ${e.localizedMessage}")
+                withContext(Dispatchers.Main) {
+                    onResult(false, "Failed to remove lock: ${e.localizedMessage}")
+                }
             }
         }
     }
@@ -204,9 +219,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 outputStream.use { stream ->
                     stream.write(jsonArray.toString(4).toByteArray(Charsets.UTF_8))
                 }
-                onResult(true, "Settings exported successfully!")
+                withContext(Dispatchers.Main) {
+                    onResult(true, "Settings exported successfully!")
+                }
             } catch (e: Exception) {
-                onResult(false, "Export failed: ${e.localizedMessage}")
+                withContext(Dispatchers.Main) {
+                    onResult(false, "Export failed: ${e.localizedMessage}")
+                }
             }
         }
     }
@@ -255,9 +274,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 if (importedCount > 0) {
                     LockMonitorForegroundService.startService(context)
                 }
-                onResult(true, "Imported $importedCount rules ($skippedCount skipped).")
+                withContext(Dispatchers.Main) {
+                    onResult(true, "Imported $importedCount rules ($skippedCount skipped).")
+                }
             } catch (e: Exception) {
-                onResult(false, "Import failed: ${e.localizedMessage}")
+                withContext(Dispatchers.Main) {
+                    onResult(false, "Import failed: ${e.localizedMessage}")
+                }
             }
         }
     }
