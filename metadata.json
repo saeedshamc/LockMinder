@@ -1,0 +1,6 @@
+{
+  "name": "LockMinder",
+  "description": "App blocker with strict time-locked lockout and self-control commitment rules.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

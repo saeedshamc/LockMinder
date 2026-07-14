@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">LockMinder</string>
+    <string name="accessibility_service_description">Used by LockMinder to detect when a locked distracting app is opened and show the time-lock shield overlay.</string>
+</resources>
